@@ -3,6 +3,8 @@ from sympy import Matrix as M
 from sympy.physics.quantum.tensorproduct import TensorProduct as tp
 from sympy.physics.quantum.dagger import Dagger
 
+import numpy as np
+
 def bitwise_filter(data, selectors):
     # compress('ABCDEF', [1,0,1,0,1,1]) --> A C E F
     return ([d for d, s in zip(data, selectors) if s])
@@ -34,6 +36,13 @@ class FermionicSpace:
 		self.phis = sp.symbols('phi1:%d'%(self.dim +1), commutative=False)
 		self.fock_basis = [M([int(x) for x in format (y,'#0%db'%(self.dim+2))[-1:1:-1]]) for y in range (2**self.dim)]
 		self.basis = [M([int(x) for x in format ((10**y),'#0%d'%(2**self.dim))]) for y in range (2**self.dim)]
+
+		self.qT_basis = self.basis[:]
+		self.qT_basis.reverse()
+
+		self.nA = np.array( [np.asarray(self.A[x].tolist(), dtype = float) for x in range (self.dim)] )
+		self.nC = np.array( [np.asarray(self.C[x].tolist(), dtype = float) for x in range (self.dim)] )
+
 		
 
 	def add_fock_state(self,occupations):
