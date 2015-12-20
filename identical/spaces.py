@@ -18,12 +18,13 @@ class FermionicSpace:
 		self._Eta = M ([[1,0],[0,-1]])
 
 		self._vac = M([0,1])
+		self._occ = M([1,0]) # i.e., self._C*self._vac
 
 		self.vac = tp (*tuple([self._vac]*(dimension)))
 		self.C=[]
 		for i in range (dimension):
-			ones = [self._One]*(dimension-i-1)
-			etas = [self._Eta]*(i)
+			ones = [self._One]*(i)
+			etas = [self._Eta]*(dimension-i-1)
 			temp = tuple(ones+[self._C]+etas)
 			temp_C = tp(*temp)
 			self.C.append(temp_C)
@@ -35,16 +36,28 @@ class FermionicSpace:
 
 		self.phis = sp.symbols('phi1:%d'%(self.dim +1), commutative=False)
 		self.fock_basis = [M([int(x) for x in format (y,'#0%db'%(self.dim+2))[-1:1:-1]]) for y in range (2**self.dim)]
-		self.basis = [M([int(x) for x in format ((10**y),'#0%d'%(2**self.dim))]) for y in range (2**self.dim)]
-
-		self.qT_basis = self.basis[:]
-		self.qT_basis.reverse()
+		self.old_basis = [M([int(x) for x in format ((10**y),'#0%d'%(2**self.dim))]) for y in range (2**self.dim)]
 
 		self.nA = np.array( [np.asarray(self.A[x].tolist(), dtype = float) for x in range (self.dim)] )
 		self.nC = np.array( [np.asarray(self.C[x].tolist(), dtype = float) for x in range (self.dim)] )
 
-		
+		self.basis = self.new_basis(self.dim)
+		self.qT_basis = self.basis[:]
+		self.qT_basis.reverse()
 
+		
+	def new_basis (self, dim):
+		basis = []
+		powerdim = 2**dim
+		for d in range (powerdim):
+			p = np.identity(powerdim)
+			for x in range (dim):
+				if (self.fock_basis[d][x] != 0):
+					p = np.dot(p,self.nC[x])
+			basis.append(sp.Matrix(np.abs(p*self.vac, dtype = int)))
+
+		return basis
+	
 	def add_fock_state(self,occupations):
 		templist = reduce (lambda x,y: x*y, bitwise_filter(self.C, occupations))
 		tempstate = templist*self.vac
