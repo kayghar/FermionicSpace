@@ -54,6 +54,7 @@ class FermionicSpace:
 			for x in range (dim):
 				if (self.fock_basis[d][x] != 0):
 					p = np.dot(p,self.nC[x])
+					print 
 			basis.append(sp.Matrix(np.abs(p*self.vac)))
 
 		return basis
